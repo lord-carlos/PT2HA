@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 '''
 Copyright 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
@@ -12,13 +14,18 @@ Modifications 2021 by RikiRC
 import sys
 import irc.bot
 import requests
+import re
+from home_assistant import HomeAssistant
 
 
 class TwitchBot(irc.bot.SingleServerIRCBot):
-    def __init__(self, username, client_id, token, channel):
+    def __init__(self, username, client_id, token, channel, reward_id, homeassistant):
         self.client_id = client_id
         self.token = token
         self.channel = '#' + channel.lower()
+        self.reward_id = reward_id
+
+        self.ha = homeassistant
 
         # Get the channel id, we will need this for v5 API calls
         url = 'https://api.twitch.tv/kraken/users?login=' + channel
@@ -43,7 +50,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
         c.cap('REQ', ':twitch.tv/commands')
         c.join(self.channel)
         print('Joined ' + self.channel)
-        c.privmsg(self.channel, "Connected!")
+        # c.privmsg(self.channel, "Connected!")
 
     def on_pubmsg(self, c, e):
 
@@ -55,16 +62,18 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
 
 
         # If a chat message starts with an exclamation point, try to run it as a command
-        if e.arguments[0][:1] == '!':
-            cmd = e.arguments[0].split(' ')[0][1:]
-            print('Received command: ' + cmd)
-            self.do_command(e, cmd)
+        # if e.arguments[0][:1] == '!':
+        #     cmd = e.arguments[0].split(' ')[0][1:]
+        #     print('Received command: ' + cmd)
+        #     self.do_command(e, cmd)
         return
 
     def do_reward_action(self, e, rewardId):
-        c = self.connection
-        if rewardId == '0c8fb25f-23e5-4642-a24f-50af5d0d03b1':
-            c.privmsg(self.channel, 'Oh daddy yeah: ' + e.arguments[0])
+        # c = self.connection
+        if rewardId == self.reward_id:
+            color = re.sub(r'\W+', '', e.arguments[0])
+            self.ha.change_color(color)
+            # c.privmsg(self.channel, 'Changing color to: ' + color)
 
 
     def do_command(self, e, cmd):
@@ -72,7 +81,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
 
 
         # Poll the API the get the current status of the stream
-        elif cmd == "title":
+        if cmd == "title":
             url = 'https://api.twitch.tv/kraken/channels/' + self.channel_id
             headers = {'Client-ID': self.client_id, 'Accept': 'application/vnd.twitchtv.v5+json'}
             r = requests.get(url, headers=headers).json()
@@ -90,18 +99,18 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
         else:
             c.privmsg(self.channel, "Did not understand command: " + cmd)
 
-def main():
-    if len(sys.argv) != 5:
-        print('Usage: twitchbot <username> <client id> <token> <channel>')
-        sys.exit(1)
+# def main():
+    # if len(sys.argv) != 5:
+    #     print('Usage: twitchbot <username> <client id> <token> <channel>')
+    #     sys.exit(1)
 
-    username  = sys.argv[1]
-    client_id = sys.argv[2]
-    token     = sys.argv[3]
-    channel   = sys.argv[4]
+    # username  = sys.argv[1]
+    # client_id = sys.argv[2]
+    # token     = sys.argv[3]
+    # channel   = sys.argv[4]
 
-    bot = TwitchBot(username, client_id, token, channel)
-    bot.start()
+    # bot = TwitchBot(username, client_id, token, channel, foo)
+    # bot.start()
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
