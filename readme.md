@@ -1,6 +1,6 @@
 # Py Twitch to Home Assistant - PT2HA
 
-PT2HA allowes you to connect twitch channel points with Home Assistant. It's currently in an early stage, Proof of Concept. It works but is limited. 
+PT2HA allows you to connect twitch channel points with Home Assistant. It's currently in an early stage, Proof of Concept. It works but is limited. 
 _______
 
 ## What works?
@@ -27,3 +27,7 @@ TODO: devices, auto_key and URL
 ## Run it
 
 TODO
+
+## Feedback
+
+I'm terrible when it comes to Python. Feel free to give feedback anyway you like.
